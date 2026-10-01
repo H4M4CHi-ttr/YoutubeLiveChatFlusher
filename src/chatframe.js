@@ -11,15 +11,15 @@ Promise.all([
 	const mode = store.others[modeName] ?? 1;
 	logger.info('Loaded chat frame script:', `${modeName} =`, mode);
 	if (mode) return;
-	const ev = new CustomEvent('ytlcf-start');
+	const ev = new CustomEvent('ytlcf-start', { cancelable: true });
 	const timer = setInterval(() => {
 		const layer = top?.document.getElementById('yt-lcf-layer');
-		if (layer) {
-			top?.document.dispatchEvent(ev);
-			logger.info('Initialized layer found, dispatched start event.');
+		// A layer can exist before the main script is ready to receive events.
+		if (layer && top?.document.dispatchEvent(ev) === false) {
+			logger.info('Main script acknowledged start event.');
 			clearInterval(timer);
 		} else {
-			logger.debug('No initialized layer found, waiting...');
+			logger.debug('Waiting for the main script to acknowledge the start event.');
 		}
 	}, 1000);
 	document.addEventListener('yt-action', onAction, { passive: true });

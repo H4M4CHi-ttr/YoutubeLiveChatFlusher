@@ -778,7 +778,7 @@ export class LiveChatController {
 			document.addEventListener('ytlcf-action', e => {
 				this.#onAction(e);
 			}, { passive: true, signal: this.abortController.signal });
-		}, { once: true, passive: true });
+		}, { once: true, passive: true, signal: this.abortController.signal });
 		this.listening = true;
 
 		const video = this.player.querySelector('#movie_player video');

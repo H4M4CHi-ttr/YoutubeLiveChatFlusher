@@ -168,10 +168,12 @@ async function onYtNavigateFinish(pageType, response) {
 	switch (modeValue) {
 		case FetchingModeEnum.DEPENDENT:
 			logger.info(`Running in dependent mode for ${videoType} (${info.videoId}):`, info.title);
-			document.addEventListener('ytlcf-start', () => {
+			document.addEventListener('ytlcf-start', e => {
 				state.controller?.listen();
 				toggle.enable();
-			});
+				// Acknowledge only after the chat receiver is listening.
+				e.preventDefault();
+			}, { signal: state.abortController.signal });
 			break;
 		case FetchingModeEnum.MOBILE: {
 			const desktopContent = await browser.runtime.sendMessage({
