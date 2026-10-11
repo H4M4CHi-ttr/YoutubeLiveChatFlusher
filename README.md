@@ -13,8 +13,7 @@ Please refer to *[wiki](https://github.com/ys-j/YoutubeLiveChatFlusher/wiki)* fo
 
 ## Features / 特徴
 
-- Written in Vanilla JS and CSS (No libraries used)  
-  Vanilla JSとCSSで書かれています（ライブラリを使用していません）
+- Written primarily in Vanilla JS and CSS; Chrome person detection bundles ONNX Runtime Web.<br>主にVanilla JSとCSSで書かれており、Chromeの人物検出にはONNX Runtime Webを同梱しています。
 - Translation function is available  
   翻訳機能が利用可能です
 - Customizable styles  
@@ -23,8 +22,7 @@ Please refer to *[wiki](https://github.com/ys-j/YoutubeLiveChatFlusher/wiki)* fo
   タイムシフト機能が利用可能です（リプレイのみ）
 - Document Picture-in-Picture (PiP w/ chat) is available  
   Document Picture-in-Picture (PiP w/ chat) が利用可能です
-- Person detection feature is available on Firefox (alpha version; not stable)  
-  Firefoxでは人物検出機能が利用可能です（アルファ版で安定的ではありません）
+- Person detection is available on desktop Firefox and Chrome (alpha version; not stable). Chrome downloads the model on first use and runs it locally.<br>デスクトップ版Firefox／Chromeで人物検出機能を利用できます（アルファ版で安定的ではありません）。Chromeでは初回利用時にモデルをダウンロードし、ブラウザー内で実行します。
 
 ## Screenshots / スクリーンショット
 

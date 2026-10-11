@@ -148,8 +148,8 @@
 					<input type=radio name=message_pause value=1>
 					<span data-i18n=enabled></span>
 				</label>
-			<dt class="only-firefox only-desktop" data-i18n=person_detection>
-			<dd class="only-firefox only-desktop">
+			<dt class="only-desktop" data-i18n=person_detection>
+			<dd class="only-desktop">
 				<label>
 					<input type=radio name=person_detector_device value>
 					<span data-i18n=disabled></span>
@@ -162,7 +162,8 @@
 					<input type=radio name=person_detector_device value=gpu>
 					<span data-i18n=enabled_gpu></span>
 				</label>
-				<table>
+				<p class=note data-i18n=description_person_detection></p>
+				<table class=only-firefox>
 					<tr>
 						<th data-i18n=inference_backend>
 						<td>

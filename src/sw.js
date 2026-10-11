@@ -7,6 +7,7 @@ import initPip from './injections/pip.mjs';
 
 import { LanguageDetectionController, TranslatorController } from './modules/translator.mjs';
 import { MLEngineManager } from './modules/ml_engine.mjs';
+import { ChromePersonDetectionEngine } from './modules/chrome_person_detector.mjs';
 
 /** @import { DEFAULT_CONFIG } from './modules/store.mjs' */
 /** @import { SegmentationResult } from '../types/messaging.d.ts' */
@@ -17,6 +18,12 @@ globalThis.browser ??= chrome;
 const loadingStore = store.load();
 
 const manifest = browser.runtime.getManifest();
+const isFirefox = 'browser_specific_settings' in manifest;
+const personDetectionOrigins = [
+	'https://huggingface.co/*',
+	'https://*.huggingface.co/*',
+	'https://*.hf.co/*',
+];
 
 const events = {
 	async reload() {
@@ -99,7 +106,7 @@ const detector = new LanguageDetectionController();
 /** @type {?TranslatorController} */
 let translationController = null;
 
-/** @type {MLEngineManager | { run: () => Promise<SegmentationResult[]> }} */
+/** @type {MLEngineManager | ChromePersonDetectionEngine | { run: (request?: {args: [Blob]}) => Promise<SegmentationResult[]> }} */
 let personDetectionEngine = {
 	async run() {
 		const width = 256, height = 144;
@@ -142,11 +149,17 @@ loadingStore.then(async s => {
 	translationController = new TranslatorController(translator ?? 'internal', config);
 
 	const { device, backend } = /** @type {typeof DEFAULT_CONFIG.personDetection} */ (s.personDetection);
-	if (!device || !manifest.optional_permissions?.includes('trialML')) return;
+	if (!device) return;
 
-	const granted = await browser.permissions.contains({ permissions: ['trialML'] });
-	if (granted) {
-		personDetectionEngine = new MLEngineManager({
+	if (isFirefox) {
+		if (!manifest.optional_permissions?.includes('trialML')) return;
+		const granted = await browser.permissions.contains({ permissions: ['trialML'] });
+		if (!granted) {
+			logger.warn('Permission "trialML" was rejected.');
+			s.personDetection.device = '';
+			return;
+		}
+		const engine = new MLEngineManager({
 			modelHub: 'huggingface',
 			taskName: 'image-segmentation',
 			modelId: 'onnx-community/mediapipe_selfie_segmentation_landscape',
@@ -154,16 +167,30 @@ loadingStore.then(async s => {
 			dtype: device === 'gpu' ? 'fp32' : 'q8',
 			backend,
 		});
+		personDetectionEngine = engine;
 		try {
-			await personDetectionEngine.ensureReady();
+			await engine.ensureReady();
 		} catch (reason) {
 			logger.warn('Failed to initialize ML engine:', reason);
 			const err = new DOMException('Person detector is not defined.', 'NotSupportedError');
-			personDetectionEngine.run = () => Promise.reject(err);
+			engine.run = () => Promise.reject(err);
 		}
 	} else {
-		logger.warn('Permission "trialML" was rejected.');
-		s.personDetection.device = '';
+		const granted = await browser.permissions.contains({ origins: personDetectionOrigins });
+		if (!granted) {
+			logger.warn('Person detection model download permission is missing.');
+			s.personDetection.device = '';
+			return;
+		}
+		const engine = new ChromePersonDetectionEngine({ device });
+		personDetectionEngine = engine;
+		try {
+			await engine.ensureReady();
+		} catch (reason) {
+			logger.warn('Failed to initialize Chrome person detector:', reason);
+			const err = new DOMException('Person detector is not defined.', 'NotSupportedError');
+			engine.run = () => Promise.reject(err);
+		}
 	}
 });
 

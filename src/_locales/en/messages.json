@@ -497,6 +497,9 @@
 	"person_detection": {
 		"message": "Person Detection (alpha-release)"
 	},
+	"description_person_detection": {
+		"message": "Segmentation runs locally. Chrome downloads the model from Hugging Face the first time it is used."
+	},
 	"enabled_wasm": {
 		"message": "Enable (WASM)"
 	},

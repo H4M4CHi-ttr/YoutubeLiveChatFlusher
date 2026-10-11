@@ -561,6 +561,8 @@ export class LiveChatController {
 		const u32data = new Uint32Array(imageData.data.buffer);
 		const prevRecv = new Uint8ClampedArray(w * h);
 		const localBuffer = new Uint8ClampedArray(w * h);
+		const isFirefox = document.body.dataset.browser === 'firefox';
+		let chromeMaskUrl = null;
 		let hasNew = false;
 
 		this.segmenter = new VideoFrameSegmenter(async res => {
@@ -570,6 +572,7 @@ export class LiveChatController {
 			hasNew = true;
 		});
 		this.segmenter.observe(video, this.layer);
+		const le = this.layer.element;
 
 		(async function renderMask() {
 			if (hasNew) {
@@ -601,12 +604,21 @@ export class LiveChatController {
 				const bitmap = await createImageBitmap(imageData);
 				ctx.transferFromImageBitmap(bitmap);
 				bitmap.close();
+				if (!isFirefox) {
+					const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+					if (blob) {
+						const nextUrl = URL.createObjectURL(blob);
+						const previousUrl = chromeMaskUrl;
+						le.style.maskImage = `linear-gradient(#fff, #fff), url("${nextUrl}")`;
+						chromeMaskUrl = nextUrl;
+						if (previousUrl) setTimeout(() => URL.revokeObjectURL(previousUrl), 1000);
+					}
+				}
 			}
 			requestAnimationFrame(renderMask);
 		})();
 
-		const le = this.layer.element;
-		le.style.maskImage = `linear-gradient(#fff, #fff), -moz-element(#${canvas.id})`;
+		if (isFirefox) le.style.maskImage = `linear-gradient(#fff, #fff), -moz-element(#${canvas.id})`;
 		le.style.maskMode = 'luminance';
 		const maskPos = {
 			x: `calc(${video.style.left || '0px'} - ${le.style.left || '0px'})`,

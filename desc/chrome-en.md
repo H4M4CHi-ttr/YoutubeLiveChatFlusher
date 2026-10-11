@@ -13,6 +13,7 @@ FEATURES
 - Real-time Translation🔠: Translate scrolling messages on the fly using your browser's built-in translator, external services (e.g., Google Translate), or even a Local LLM (OpenAI-compatible API).
 - Adjustable Replay (Time-shift)⏳: Tweak the timing of chat replays for archived videos. (Available in Independent Mode)
 - Picture-in-Picture with Chat (Beta)📺*: Watch your favorite content and keep the scrolling chat visible in a dedicated PiP window.
+- Person Detection Support (Alpha)✨*: Focus on your fave by automatically detecting them and hiding messages behind them. Chrome downloads the segmentation model the first time the feature is enabled; inference runs locally in the browser.
 
 *: Desktop-only
 
@@ -29,6 +30,8 @@ CONFIGURABLE OPTIONS (Highlights)
 - Time-shift Duration (in seconds)
 - User-defined CSS
 - Hotkeys (Keyboard Shortcuts)
+
+Person detection is available on desktop Chrome. It downloads the MediaPipe Selfie Segmentation model from Hugging Face after you enable it and runs inference locally.
 
 Access the config panel via the "Gear" icon, similar to video quality or annotation settings.
 

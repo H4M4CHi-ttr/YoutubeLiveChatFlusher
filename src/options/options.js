@@ -8,6 +8,12 @@ globalThis.browser ??= chrome;
 
 const manifest = browser.runtime.getManifest();
 document.documentElement.dataset.browser = 'browser_specific_settings' in manifest ? 'firefox' : 'chrome';
+const isFirefox = 'browser_specific_settings' in manifest;
+const personDetectionOrigins = [
+	'https://huggingface.co/*',
+	'https://*.huggingface.co/*',
+	'https://*.hf.co/*',
+];
 
 browser.runtime.getPlatformInfo().then(info => {
 	const platform = ['android', 'ios'].includes(info.os) ? 'mobile' : 'desktop';
@@ -185,16 +191,26 @@ form.addEventListener('change', async e => {
 	if (e.target instanceof HTMLInputElement) switch (e.target.name) {
 		case 'notification_whenUpdated':
 		case 'person_detector_device': {
-			const permission = {
-				notification_whenUpdated: /** @type {const} */ ({ name: 'notifications', falsyValue: '0' }),
-				person_detector_device: /** @type {const} */ ({ name: 'trialML', falsyValue: '' }),
-			}[e.target.name];
-			if (e.target.value !== permission.falsyValue) {
-				const granted = await browser.permissions.request({ permissions: [permission.name] }).catch(logger.error);
+			if (e.target.name === 'notification_whenUpdated') {
+				if (e.target.value !== '0') {
+					const granted = await browser.permissions.request({ permissions: ['notifications'] }).catch(logger.error);
+					if (!granted) {
+						const radio = form.elements[e.target.name];
+						if (radio instanceof RadioNodeList) radio.value = '0';
+						logger.warn('Permission denied: notifications');
+					}
+				}
+				break;
+			}
+			if (e.target.value) {
+				const requested = isFirefox
+					? { permissions: ['trialML'] }
+					: { origins: personDetectionOrigins };
+				const granted = await browser.permissions.request(requested).catch(logger.error);
 				if (!granted) {
 					const radio = form.elements[e.target.name];
-					if (radio instanceof RadioNodeList) radio.value = permission.falsyValue;
-					logger.warn('Permission denied:', permission.name);
+					if (radio instanceof RadioNodeList) radio.value = '';
+					logger.warn('Person detection permission was denied.');
 				}
 			}
 			break;

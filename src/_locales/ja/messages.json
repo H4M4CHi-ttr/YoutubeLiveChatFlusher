@@ -497,6 +497,9 @@
 	"person_detection": {
 		"message": "人物検出（アルファ版機能）"
 	},
+	"description_person_detection": {
+		"message": "人物検出はブラウザー内で実行されます。Chromeでは初回利用時にHugging Faceからモデルをダウンロードします。"
+	},
 	"enabled_wasm": {
 		"message": "する (WASM)"
 	},
