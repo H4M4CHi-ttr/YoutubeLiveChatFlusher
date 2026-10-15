@@ -22,6 +22,9 @@
 			"matches": ["https://www.youtube.com/live_chat*"]
 		}
 	],
+	"content_security_policy": {
+		"extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'"
+	},
 	"default_locale": "en",
 	"description": "__MSG_manifestDescription__",
 	"homepage_url": "https://github.com/ys-j/YoutubeLiveChatFlusher",
@@ -38,7 +41,7 @@
 		"page": "options/options.html",
 		"open_in_tab": true
 	},
-	"permissions": ["scripting", "storage"],
+	"permissions": ["scripting", "storage", "offscreen"],
 	"web_accessible_resources": [
 		{
 			"resources": ["modules/*", "injections/*", "styles/*", "templates/*", "images/*"],

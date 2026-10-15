@@ -142,9 +142,10 @@ loadingStore.then(async s => {
 	translationController = new TranslatorController(translator ?? 'internal', config);
 
 	const { device, backend } = /** @type {typeof DEFAULT_CONFIG.personDetection} */ (s.personDetection);
-	if (!device || !manifest.optional_permissions?.includes('trialML')) return;
+	if (!device) return;
 
-	const granted = await browser.permissions.contains({ permissions: ['trialML'] });
+	const granted = !manifest.optional_permissions?.includes('trialML')
+		|| await browser.permissions.contains({ permissions: ['trialML'] });
 	if (granted) {
 		personDetectionEngine = new MLEngineManager({
 			modelHub: 'huggingface',
@@ -170,6 +171,7 @@ loadingStore.then(async s => {
 /** @import { YTLCFMessage } from "../types/messaging.d.ts" */
 // @ts-expect-error: Type casting in parameter list causes signature mismatch with onMessage listener
 browser.runtime.onMessage.addListener((/** @type {YTLCFMessage.Request.Any} */ msg, sender, respond) => {
+	if ('ml' in msg) return false;
 	const tabId = sender.tab?.id;
 	/** @type {(err: unknown) => void} */
 	const handleError = err => {
@@ -235,11 +237,18 @@ browser.runtime.onMessage.addListener((/** @type {YTLCFMessage.Request.Any} */ m
 		.then(sl => translationController?.translate(text, tl, sl))
 		.then(respond, handleError);
 	} else if ('mask' in msg) {
-		const { mask: blob } = msg;
+		const { mask: frame } = msg;
+		if (typeof frame !== 'string' || !/^data:image\/(?:webp|png|jpeg);base64,/.test(frame)) {
+			handleError(new TypeError('Expected an encoded video frame.'));
+			return false;
+		}
 		const startTime = performance.now();
-		personDetectionEngine.run({ args: [ blob ] })
+		personDetectionEngine.run({ args: [ frame ] })
 		.then(result => {
-			respond(result);
+			respond(result.map(({ label, score, mask }) => ({
+				label, score,
+				mask: { ...mask, data: Array.from(mask.data) },
+			})));
 			performanceLogger.write(performance.now() - startTime);
 		}, handleError);
 	} else if ('fire' in msg) {

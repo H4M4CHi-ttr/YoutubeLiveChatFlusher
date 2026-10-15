@@ -8,7 +8,9 @@ const BundleTarget = {
 } as const;
 type BundleTarget = typeof BundleTarget[keyof typeof BundleTarget];
 
-await Deno.remove("dist/", { recursive: true }).catch();
+await Deno.remove("dist/", { recursive: true }).catch(error => {
+	if (!(error instanceof Deno.errors.NotFound)) throw error;
+});
 await Deno.mkdir("dist");
 await bundleFor(BundleTarget.Chrome);
 await bundleFor(BundleTarget.Firefox);
@@ -29,6 +31,17 @@ async function bundleFor(target: BundleTarget) {
 		processing.push(Deno.rename(path, path.replace(`.${target}.`, ".")));
 	}
 	await Promise.all(processing);
+	if (target === BundleTarget.Chrome) {
+		const vendor = `dist/${target}/vendor`;
+		await Deno.mkdir(vendor);
+		const dependency = new URL('./', import.meta.resolve('@huggingface/transformers'));
+		for (const name of ['transformers.min.js', 'ort-wasm-simd-threaded.jsep.mjs', 'ort-wasm-simd-threaded.jsep.wasm']) {
+			await Deno.copyFile(new URL(name, dependency), `${vendor}/${name}`);
+		}
+		await Deno.copyFile(new URL('../LICENSE', dependency), `${vendor}/transformers.LICENSE`);
+		// The ONNX Runtime npm package does not include its license.
+		await Deno.copyFile('licenses/onnxruntime.LICENSE', `${vendor}/onnxruntime.LICENSE`);
+	}
 }
 
 async function zipFor(target: BundleTarget) {

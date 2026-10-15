@@ -47,13 +47,17 @@ export class MLEngineManager {
 
 	/**
 	 * @param {object} req
-	 * @param {unknown} req.args
+	 * @param {[string]} req.args
 	 * @param {Record<string, unknown>} [req.options]
 	 * @param {Record<string, unknown>} [req.streamerOptions]
 	 */
 	async run(req) {
 		await this.ensureReady();
 		if (!this.isReady) throw this.#disabledError;
-		return browser.trial.ml.runEngine(req);
+		const frame = await (await fetch(req.args[0])).blob();
+		// The trialML declaration omits the returned inference result.
+		/** @type {unknown} */
+		const result = await browser.trial.ml.runEngine({ ...req, args: [frame] });
+		return /** @type {import('../../types/messaging.d.ts').SegmentationResult[]} */ (result);
 	}
 }

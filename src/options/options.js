@@ -189,7 +189,7 @@ form.addEventListener('change', async e => {
 				notification_whenUpdated: /** @type {const} */ ({ name: 'notifications', falsyValue: '0' }),
 				person_detector_device: /** @type {const} */ ({ name: 'trialML', falsyValue: '' }),
 			}[e.target.name];
-			if (e.target.value !== permission.falsyValue) {
+			if (e.target.value !== permission.falsyValue && manifest.optional_permissions?.includes(permission.name)) {
 				const granted = await browser.permissions.request({ permissions: [permission.name] }).catch(logger.error);
 				if (!granted) {
 					const radio = form.elements[e.target.name];

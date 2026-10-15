@@ -200,7 +200,7 @@ export class LiveChatLayer {
  * @prop {?string} label
  * @prop {?number} score
  * @prop {object} mask
- * @prop {TypedArray} mask.data
+ * @prop {number[] | TypedArray} mask.data
  * @prop {number} mask.width
  * @prop {number} mask.height
  * @prop {number} mask.channels
@@ -236,8 +236,15 @@ export class VideoFrameSegmenter {
 		const [resizeWidth, resizeHeight] = VideoFrameSegmenter.TARGET_SIZE;
 		const bitmap = await createImageBitmap(video, { resizeWidth, resizeHeight });
 		this.context?.transferFromImageBitmap(bitmap);
-		const mask = await this.offscreen.convertToBlob({ type: 'image/webp', quality: .3 });
-		const result = await browser.runtime.sendMessage({ mask });
+		const blob = await this.offscreen.convertToBlob({ type: 'image/webp', quality: .3 });
+		/** @type {Promise<string>} */
+		const encoding = new Promise((resolve, reject) => {
+			const reader = new FileReader();
+			reader.onload = () => resolve(/** @type {string} */ (reader.result));
+			reader.onerror = () => reject(reader.error);
+			reader.readAsDataURL(blob);
+		});
+		const result = await browser.runtime.sendMessage({ mask: await encoding });
 		if (result && typeof result === 'object' && 'error' in result) {
 			const { name, message } = result.error;
 			throw new DOMException(message, name);

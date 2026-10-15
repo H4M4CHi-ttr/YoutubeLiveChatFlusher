@@ -49,7 +49,7 @@ export namespace YTLCFMessage {
 			};
 		};
 		type PersonDetection = {
-			mask: Blob
+			mask: string
 		};
 		type EventFire = {
 			fire: "reload" | "reloadTabs" | "openOptions" | "getNonce";
@@ -89,7 +89,7 @@ export interface SegmentationResult {
 	label: string | null;
 	score: number | null;
 	mask: {
-		data: Int8Array | Int16Array | Int32Array | Uint8Array | Uint16Array | Uint32Array | Uint8ClampedArray | Float16Array | Float32Array | Float64Array;
+		data: number[] | Int8Array | Int16Array | Int32Array | Uint8Array | Uint16Array | Uint32Array | Uint8ClampedArray | Float16Array | Float32Array | Float64Array;
 		width: number;
 		height: number;
 		channels: number;

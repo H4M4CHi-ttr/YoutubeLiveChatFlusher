@@ -544,17 +544,13 @@ export class LiveChatController {
 	#startSendingFrame(video) {
 		if (!s.personDetection.device) return;
 
+		const le = this.layer.element;
 		const canvas = document.createElement('canvas');
 		const ctx = canvas.getContext('bitmaprenderer');
 		if (!ctx) {
 			logger.warn('ImageBitmapRenderingContext is not supported.');
 			return;
 		}
-		canvas.id = 'yt-lcf-mask-canvas';
-		canvas.style.pointerEvents = 'none';
-		canvas.style.position = 'absolute';
-		canvas.style.visibility = 'hidden';
-
 		const [w, h] = VideoFrameSegmenter.TARGET_SIZE;
 		[canvas.width, canvas.height] = [w, h];
 		const imageData = new ImageData(w, h);
@@ -601,12 +597,11 @@ export class LiveChatController {
 				const bitmap = await createImageBitmap(imageData);
 				ctx.transferFromImageBitmap(bitmap);
 				bitmap.close();
+				le.style.maskImage = `linear-gradient(#fff, #fff), url("${canvas.toDataURL()}")`;
 			}
 			requestAnimationFrame(renderMask);
 		})();
 
-		const le = this.layer.element;
-		le.style.maskImage = `linear-gradient(#fff, #fff), -moz-element(#${canvas.id})`;
 		le.style.maskMode = 'luminance';
 		const maskPos = {
 			x: `calc(${video.style.left || '0px'} - ${le.style.left || '0px'})`,
@@ -616,7 +611,6 @@ export class LiveChatController {
 		le.style.maskSize = `100% 100%, ${video.style.width} ${video.style.height}`;
 		le.style.maskRepeat = 'no-repeat, no-repeat';
 		le.style.maskComposite = 'exclude';
-		le.after(canvas);
 	}
 
 	/**

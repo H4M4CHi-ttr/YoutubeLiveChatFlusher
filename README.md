@@ -13,8 +13,8 @@ Please refer to *[wiki](https://github.com/ys-j/YoutubeLiveChatFlusher/wiki)* fo
 
 ## Features / 特徴
 
-- Written in Vanilla JS and CSS (No libraries used)  
-  Vanilla JSとCSSで書かれています（ライブラリを使用していません）
+- Written in Vanilla JS and CSS (Chrome person detection uses Transformers.js)\
+  Vanilla JSとCSSで書かれています（Chromeの人物検出にはTransformers.jsを使用）
 - Translation function is available  
   翻訳機能が利用可能です
 - Customizable styles  
@@ -23,8 +23,10 @@ Please refer to *[wiki](https://github.com/ys-j/YoutubeLiveChatFlusher/wiki)* fo
   タイムシフト機能が利用可能です（リプレイのみ）
 - Document Picture-in-Picture (PiP w/ chat) is available  
   Document Picture-in-Picture (PiP w/ chat) が利用可能です
-- Person detection feature is available on Firefox (alpha version; not stable)  
-  Firefoxでは人物検出機能が利用可能です（アルファ版で安定的ではありません）
+- Person detection feature is available on Firefox and Chrome (alpha version; not stable)\
+  FirefoxとChromeでは人物検出機能が利用可能です（アルファ版で安定的ではありません）
+  Inference runs locally; model files are downloaded on first use. Chrome supports WASM and WebGPU.\
+  推論は端末内で実行され、初回利用時にモデルをダウンロードします。ChromeはWASMとWebGPUに対応しています。
 
 ## Screenshots / スクリーンショット
 
